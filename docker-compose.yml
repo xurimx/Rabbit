@@ -1,0 +1,43 @@
+version: '3.4'
+
+services:
+  worker:
+    image: ${DOCKER_REGISTRY-}demoworker
+    build:
+      context: .
+      dockerfile: DemoApp.Receiver/Dockerfile
+    depends_on:
+        - broker
+  demoreceiver:
+    image: ${DOCKER_REGISTRY-}demoreceiver
+    build:
+      context: .
+      dockerfile: DemoReceiver/Dockerfile
+    depends_on:
+        - broker
+  demoapp:
+    image: ${DOCKER_REGISTRY-}demoapp
+    build:
+      context: .
+      dockerfile: DemoApp/Dockerfile
+    depends_on:
+        - database
+        - broker
+        - demoreceiver
+        - worker
+    ports:
+      - "80:80"
+  database:
+    image: mcr.microsoft.com/mssql/server:2017-latest-ubuntu
+    ports:
+    - "1433:1433"
+    environment: 
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "P@ssw0rd"
+      MSSQL_PID: "Express"
+  broker:
+    image: rabbitmq:3-management
+    ports:
+     - "5672:5672"
+     - "90:80"
+     - "8080:15672"

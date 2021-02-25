@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DemoDeserializeReceiver": {
+      "commandName": "Project"
+    },
+    "Docker": {
+      "commandName": "Docker"
+    }
+  }
+}
