@@ -23,13 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Rmq.Consumers\Rmq.Consumers.csproj" />
     <ProjectReference Include="..\DemoApp.Contracts\DemoApp.Contracts.csproj" />
     <ProjectReference Include="..\DemoPublisher\DemoPublisher.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
+    <ProjectReference Include="..\Rmq.Consumers\Rmq.Consumers.csproj" />
   </ItemGroup>
 
 </Project>
