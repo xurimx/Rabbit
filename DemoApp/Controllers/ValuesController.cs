@@ -42,10 +42,17 @@ namespace DemoApp.Controllers
         [HttpPost("worker")]
         public async Task<string> Worker(Message message)
         {
-            await publisher.Publish(message, MessageType.Message, "worker", "mediator");
+            await publisher.Publish(message, MessageType.Message, "worker", "mediator", "message");
 
             return "ok";
         }
 
+        [HttpPost("event")]
+        public async Task<string> Event(TestEvent message)
+        {
+            await publisher.Publish(message, MessageType.TestEvent, "worker", "mediator", "testevent");
+
+            return "ok";
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace DemoDeserializeReceiver
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.ExchangeDeclare("default", ExchangeType.Fanout);
+                channel.ExchangeDeclare("default", ExchangeType.Topic);
                 channel.QueueDeclare("serialize", true, false, false);
                 channel.QueueBind("serialize", "default", "");
 

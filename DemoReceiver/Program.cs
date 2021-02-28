@@ -15,7 +15,7 @@ namespace DemoReceiver
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.ExchangeDeclare("get", ExchangeType.Fanout);
+                channel.ExchangeDeclare("get", ExchangeType.Topic);
                 channel.QueueDeclare("hello", true, false, false);
                 channel.QueueBind("hello", "get", "");
 

@@ -30,9 +30,9 @@ namespace DemoApp.Receiver
             var connection = factory.CreateConnection();
             var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare("mediator", ExchangeType.Fanout);
+            channel.ExchangeDeclare("mediator", ExchangeType.Topic);
             channel.QueueDeclare("worker", true, false, false);
-            channel.QueueBind("worker", "mediator", "");
+            channel.QueueBind("worker", "mediator", "message");
 
             var consumer = new EventingBasicConsumer(channel);
 
