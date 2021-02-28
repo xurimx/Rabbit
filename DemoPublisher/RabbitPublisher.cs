@@ -16,11 +16,11 @@ namespace DemoPublisher
         {
             this.connection = connection;
         }
-        public Task Publish(IMessage message, MessageType type, string? queue = "default", string? exchange = "")
+        public Task Publish(IMessage message, MessageType type, string? queue = "default", string? exchange = "", string? routingKey = "")
         {
             using (var model = connection.CreateModel())
             {
-                model.ExchangeDeclare(exchange, ExchangeType.Fanout);
+                model.ExchangeDeclare(exchange, ExchangeType.Topic);
                 model.QueueDeclare(queue, true, false, false);
 
                 IBasicProperties props = model.CreateBasicProperties();
@@ -31,7 +31,7 @@ namespace DemoPublisher
                 var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
                 model.BasicPublish(exchange: exchange,
-                                     routingKey: "",
+                                     routingKey: routingKey,
                                      basicProperties: props,
                                      body: body);
             }

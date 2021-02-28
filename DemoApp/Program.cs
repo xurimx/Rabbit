@@ -15,7 +15,6 @@ namespace DemoApp
         public static void Main(string[] args)
         {
             IHost host = CreateHostBuilder(args).Build();
-
             var scopeFactory = host.Services.GetRequiredService<IServiceScopeFactory>();
             using (var scope = scopeFactory.CreateScope())
             {

@@ -8,7 +8,7 @@ namespace DemoPublisher
 {
     public interface IRabbitPublisher
     {
-        Task Publish(IMessage message, MessageType type, string? queue = "", string? exchange = "");
+        Task Publish(IMessage message, MessageType type, string? queue = "", string? exchange = "", string? routingKey = "");
         Task Publish(IMessage message);
     }
 }
