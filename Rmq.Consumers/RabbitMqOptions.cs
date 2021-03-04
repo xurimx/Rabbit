@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Rmq.Consumers
@@ -38,9 +39,13 @@ namespace Rmq.Consumers
             var connection = Factory.CreateConnection();
             var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange, ExchangeType.Topic);
+            Dictionary<string, object> bindingOneHeaders = new Dictionary<string, object>();
+            bindingOneHeaders.Add("x-match", "type");
+            bindingOneHeaders.Add("type", typeof(T).Name);
+
+            channel.ExchangeDeclare(exchange, ExchangeType.Headers);
             channel.QueueDeclare(queue, true, false, false);
-            channel.QueueBind(queue, exchange, topic);
+            channel.QueueBind(queue, exchange, topic, bindingOneHeaders);
 
             var consumer = new EventingBasicConsumer(channel);
 
@@ -58,6 +63,43 @@ namespace Rmq.Consumers
             };
 
             channel.BasicConsume(queue: queue,
+                     autoAck: true,
+                     consumer: consumer);
+
+            return this;
+        }
+
+        public RabbitMqOptions AddRabbitMQConsumer<T, THandler>()
+            where T : class
+            where THandler : class, IRmqHandler<T>
+        {
+            var connection = Factory.CreateConnection();
+            var channel = connection.CreateModel();
+
+            Dictionary<string, object> bindingOneHeaders = new Dictionary<string, object>();
+            bindingOneHeaders.Add("x-match", "all");
+            bindingOneHeaders.Add("type", typeof(T).Name);
+
+            channel.ExchangeDeclare("demo", ExchangeType.Headers, true);
+            channel.QueueDeclare(typeof(T).Name, true, false, false);
+            channel.QueueBind(typeof(T).Name, "demo", "", bindingOneHeaders);
+
+            var consumer = new EventingBasicConsumer(channel);
+
+            consumer.Received += (model, ea) =>
+            {
+                using (var scope = scopeFactory.CreateScope())
+                {
+                    var body = ea.Body.ToArray();
+                    var message = Encoding.UTF8.GetString(body);
+
+                    T obj = JsonConvert.DeserializeObject<T>(message);
+                    THandler handler = scope.ServiceProvider.GetRequiredService<THandler>();
+                    handler.Handle(obj, new System.Threading.CancellationToken());
+                }
+            };
+
+            channel.BasicConsume(queue: typeof(T).Name,
                      autoAck: true,
                      consumer: consumer);
 

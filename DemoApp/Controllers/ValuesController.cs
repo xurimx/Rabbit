@@ -26,23 +26,7 @@ namespace DemoApp.Controllers
         [HttpGet("{msg}")]
         public async Task<string> GetAsync(string msg = "Hello World")
         {
-            await publisher.Publish(new Message { Title = "Hello", Description = msg }, MessageType.Message, "hello", "get");
-
-            return "ok";
-        }
-
-        [HttpPost]
-        public async Task<string> PostAsync(Message message)
-        {
-            await publisher.Publish(message, MessageType.Message, "serialize", "default");
-
-            return "ok";
-        }
-
-        [HttpPost("worker")]
-        public async Task<string> Worker(Message message)
-        {
-            await publisher.Publish(message, MessageType.Message, "worker", "mediator", "message");
+            await publisher.Publish(new Message { Title = "Hello", Description = msg });
 
             return "ok";
         }
@@ -50,7 +34,7 @@ namespace DemoApp.Controllers
         [HttpPost("event")]
         public async Task<string> Event(TestEvent message)
         {
-            await publisher.Publish(message, MessageType.TestEvent, "worker", "mediator", "testevent");
+            await publisher.Publish(message);
 
             return "ok";
         }

@@ -15,9 +15,9 @@ namespace DemoReceiver
             using (var connection = factory.CreateConnection())
             using (var channel = connection.CreateModel())
             {
-                channel.ExchangeDeclare("get", ExchangeType.Topic);
-                channel.QueueDeclare("hello", true, false, false);
-                channel.QueueBind("hello", "get", "");
+                channel.ExchangeDeclare("demo", ExchangeType.Headers);
+                channel.QueueDeclare(typeof(Message).Name, true, false, false);
+                channel.QueueBind(typeof(Message).Name, "demo", "");
 
                 var consumer = new EventingBasicConsumer(channel);
                 consumer.Received += (model, ea) =>

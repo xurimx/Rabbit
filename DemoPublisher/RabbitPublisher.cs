@@ -16,31 +16,27 @@ namespace DemoPublisher
         {
             this.connection = connection;
         }
-        public Task Publish(IMessage message, MessageType type, string? queue = "default", string? exchange = "", string? routingKey = "")
+
+        public Task Publish(IMessage message)
         {
             using (var model = connection.CreateModel())
             {
-                model.ExchangeDeclare(exchange, ExchangeType.Topic);
-                model.QueueDeclare(queue, true, false, false);
+                model.ExchangeDeclare("demo", ExchangeType.Headers, true);
+                model.QueueDeclare(message.GetType().Name, true, false, false, null);
 
                 IBasicProperties props = model.CreateBasicProperties();
                 props.Headers = new Dictionary<string, object>();
-                props.Headers.Add("MessageType", (int)MessageType.Message);
+                props.Headers.Add("type", message.GetType().Name);
                 props.ContentType = "application/json";
 
                 var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
-                model.BasicPublish(exchange: exchange,
-                                     routingKey: routingKey,
-                                     basicProperties: props,
-                                     body: body);
+                model.BasicPublish(exchange: "demo",
+                     routingKey: "",
+                     basicProperties: props,
+                     body: body);
             }
             return Task.CompletedTask;
-        }
-
-        public Task Publish(IMessage message)
-        {
-            throw new NotImplementedException();
         }
     }
 }

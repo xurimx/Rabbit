@@ -30,7 +30,7 @@ namespace DemoApp.Receiver
             var connection = factory.CreateConnection();
             var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare("mediator", ExchangeType.Topic);
+            channel.ExchangeDeclare("mediator", ExchangeType.Direct);
             channel.QueueDeclare("worker", true, false, false);
             channel.QueueBind("worker", "mediator", "message");
 

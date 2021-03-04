@@ -24,8 +24,8 @@ namespace DemoApp
             services.AddRmqHandlers(GetType().Assembly);
 
             services.AddRabbitMq("broker", 5672, options => {
-                options.AddRabbitMQConsumer<Message, MessageHandler>("mediator", "worker", "message");
-                options.AddRabbitMQConsumer<TestEvent, TestEventHandler>("mediator", "worker", "testevent");
+                options.AddRabbitMQConsumer<Message, MessageHandler>();
+                options.AddRabbitMQConsumer<TestEvent, TestEventHandler>();
             });
 
             services.AddScoped<IRabbitPublisher, RabbitPublisher>();
