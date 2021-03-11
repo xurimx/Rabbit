@@ -1,14 +1,15 @@
-using DemoApp.Receiver.Handlers;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
+using Rmq.Consumers;
+using System.Reflection;
+using DemoApp.Contracts;
+using DemoReceiver.Worker.Handlers;
 
-namespace DemoApp.Receiver
+namespace DemoReceiver.Worker
 {
     public class Program
     {
@@ -21,10 +22,12 @@ namespace DemoApp.Receiver
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.AddMediatR(Assembly.GetExecutingAssembly(),
-                                        typeof(MessageHandler).Assembly);
-                    services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-                                        
+                    services.AddRmqHandlers(Assembly.GetExecutingAssembly());
+
+                    services.AddRabbitMq("broker", 5672, options => {
+                        options.AddRabbitMQConsumer<TestEvent, TestEventHandler>();
+                    });
+
                     services.AddHostedService<Worker>();
                 });
     }

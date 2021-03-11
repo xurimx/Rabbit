@@ -31,7 +31,7 @@ namespace Rmq.Consumers
         /// <param name="exchange"></param>
         /// <param name="queue"></param>
         /// <param name="topic"></param>
-        /// <returns></returns>
+        /// <returns>Returns the same RabbitMQ Options Builder</returns>
         public RabbitMqOptions AddRabbitMQConsumer<T, THandler>(string exchange, string queue, string topic)
             where T : class
             where THandler : class, IRmqHandler<T>
@@ -69,20 +69,27 @@ namespace Rmq.Consumers
             return this;
         }
 
+        /// <summary>
+        /// Creates a new RabbitMq Consumer and delegates the message to the appropriate handler
+        /// </summary>
+        /// <typeparam name="T">The Type of the Message received in this queue<</typeparam>
+        /// <typeparam name="THandler">The Type of the Handler to delegate this message to</typeparam>
+        /// <returns>Returns the same RabbitMQ Options Builder</returns>
         public RabbitMqOptions AddRabbitMQConsumer<T, THandler>()
             where T : class
             where THandler : class, IRmqHandler<T>
         {
+            var exchange = typeof(T).Name;
+
             var connection = Factory.CreateConnection();
             var channel = connection.CreateModel();
 
             Dictionary<string, object> bindingOneHeaders = new Dictionary<string, object>();
-            bindingOneHeaders.Add("x-match", "all");
             bindingOneHeaders.Add("type", typeof(T).Name);
 
-            channel.ExchangeDeclare("demo", ExchangeType.Headers, true);
-            channel.QueueDeclare(typeof(T).Name, true, false, false);
-            channel.QueueBind(typeof(T).Name, "demo", "", bindingOneHeaders);
+            channel.ExchangeDeclare(exchange, ExchangeType.Fanout, true);
+            string queueName = channel.QueueDeclare().QueueName;
+            channel.QueueBind(queueName, exchange, "", bindingOneHeaders);
 
             var consumer = new EventingBasicConsumer(channel);
 
@@ -90,16 +97,22 @@ namespace Rmq.Consumers
             {
                 using (var scope = scopeFactory.CreateScope())
                 {
-                    var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
+                    object type = null;
+                    ea.BasicProperties.Headers?.TryGetValue("type", out type);
 
-                    T obj = JsonConvert.DeserializeObject<T>(message);
-                    THandler handler = scope.ServiceProvider.GetRequiredService<THandler>();
-                    handler.Handle(obj, new System.Threading.CancellationToken());
+                    if (typeof(T).Name == Encoding.UTF8.GetString((byte[])type))
+                    {
+                        var body = ea.Body.ToArray();
+                        var message = Encoding.UTF8.GetString(body);
+
+                        T obj = JsonConvert.DeserializeObject<T>(message);
+                        THandler handler = scope.ServiceProvider.GetRequiredService<THandler>();
+                        handler.Handle(obj, new System.Threading.CancellationToken());
+                    }
                 }
             };
 
-            channel.BasicConsume(queue: typeof(T).Name,
+            channel.BasicConsume(queue: queueName,
                      autoAck: true,
                      consumer: consumer);
 

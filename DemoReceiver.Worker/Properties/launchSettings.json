@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "DemoApp.Receiver": {
+    "DemoReceiver.Worker": {
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"

@@ -5,16 +5,16 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:5.0-buster-slim AS build
 WORKDIR /src
-COPY ["DemoApp.Receiver/DemoApp.Receiver.csproj", "DemoApp.Receiver/"]
-RUN dotnet restore "DemoApp.Receiver/DemoApp.Receiver.csproj"
+COPY ["DemoReceiver.Worker/DemoReceiver.Worker.csproj", "DemoReceiver.Worker/"]
+RUN dotnet restore "DemoReceiver.Worker/DemoReceiver.Worker.csproj"
 COPY . .
-WORKDIR "/src/DemoApp.Receiver"
-RUN dotnet build "DemoApp.Receiver.csproj" -c Release -o /app/build
+WORKDIR "/src/DemoReceiver.Worker"
+RUN dotnet build "DemoReceiver.Worker.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "DemoApp.Receiver.csproj" -c Release -o /app/publish
+RUN dotnet publish "DemoReceiver.Worker.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "DemoApp.Receiver.dll"]
+ENTRYPOINT ["dotnet", "DemoReceiver.Worker.dll"]

@@ -21,22 +21,29 @@ namespace DemoPublisher
         {
             using (var model = connection.CreateModel())
             {
-                model.ExchangeDeclare("demo", ExchangeType.Headers, true);
-                model.QueueDeclare(message.GetType().Name, true, false, false, null);
+                var exchange = message.GetType().Name;
+
+                model.ExchangeDeclare(exchange, ExchangeType.Fanout, true);
 
                 IBasicProperties props = model.CreateBasicProperties();
+                
                 props.Headers = new Dictionary<string, object>();
                 props.Headers.Add("type", message.GetType().Name);
                 props.ContentType = "application/json";
 
                 var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
 
-                model.BasicPublish(exchange: "demo",
+                model.BasicPublish(exchange: exchange,
                      routingKey: "",
                      basicProperties: props,
                      body: body);
             }
             return Task.CompletedTask;
+        }
+
+        public Task Publish(IMessage message, MessageType type, string queue = "", string exchange = "", string routingKey = "")
+        {
+            throw new NotImplementedException();
         }
     }
 }
